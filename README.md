@@ -102,4 +102,4 @@ While many full-stack tutorials focus on social media clones or e-commerce, this
 ## 👤 Author
 
 Pragambesh Moro
-https://www.linkedin.com/in/pragambesh-moro-2b4435191/
+https://tinyurl.com/43n9ex94
