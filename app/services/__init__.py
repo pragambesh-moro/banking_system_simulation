@@ -40,3 +40,22 @@ def get_account_by_id(db: Session, account_id: int) -> Account | None:
     #returns account object if found or None
     return db.query(Account).filter(Account.id == account_id).first()
 
+
+def get_account_transactions(db: Session, account_id: int, limit: int = 10, offset: int = 0) -> dict:
+    account = db.query(Account).filter(Account.id == account_id).first()
+
+    if not account:
+        raise ValueError(f"Account with account id: {account_id} not found!!")
+    
+    total_count = db.query(Transaction).filter(Transaction.account_id == account_id).count()
+
+    transactions = db.query(Transaction).filter(Transaction.account_id == account_id).order_by(Transaction.created_at.desc()).limit(limit).offset(offset).all()
+
+    return {
+        "account_id": account.id,
+        "account_number": account.account_number,
+        "current_balance": account.balance,
+        "transactions": transactions,
+        "total_transactions": total_count
+    }
+

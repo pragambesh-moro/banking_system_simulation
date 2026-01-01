@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas import AccountCreate, AccountResponse
-from app.services import create_account, get_account_by_id
+from app.schemas import AccountCreate, AccountResponse, TransactionHistoryResponse
+from app.services import create_account, get_account_by_id, get_account_transactions
 
 
 router = APIRouter(prefix="/api/v1", tags=["accounts"])
@@ -52,3 +52,25 @@ def get_account_endpoint(account_id: int, db: Session = Depends(get_db)):
         )
     
     return account
+
+
+@router.get(
+    "/accounts/{account_id}/history",
+    response_model=TransactionHistoryResponse,
+    summary="Get Transaction History",
+    description="Retrieve transaction history for the given account in a paginated format"
+)
+def get_transaction_history_endpoint(account_id: int, limit: int = 10, offset: int = 0, db: Session = Depends(get_db)):
+    if limit < 1 or limit > 100:
+        raise HTTPException(status_code=400, detail="Limit must be between 1 and 100!")
+    if offset < 0:
+        raise HTTPException(status_code=400, detail="Offset cannot be zero!!")
+    
+    try:
+        history = get_account_transactions(db, account_id, limit, offset)
+        return history
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"failed to retrieve transaction history: {str(e)}")

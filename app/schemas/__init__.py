@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
@@ -39,3 +39,14 @@ class TransactionResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class TransactionHistoryResponse(BaseModel):
+    account_id: int
+    account_number: str
+    current_balance: Decimal
+    transactions: List[TransactionResponse]
+    total_transactions: int
+
+    model_config = ConfigDict(from_attributes=True, json_encoders= {
+        Decimal: lambda v: float(v)
+    })
