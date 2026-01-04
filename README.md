@@ -32,7 +32,7 @@ The system follows a monolithic client-server architecture. The React frontend c
 |  [ ReactJS App ]    | <-------> |    [ FastAPI App ]       | <-------> |      [ MySQL ]      |
 |  - UI Components    |   JSON    |  - Pydantic Models       |           |   - User Tables     |
 |  - State Management |           |  - Transaction Logic     |           |   - Ledger Tables   |
-|                     |           |  - SQLAlchemy ORM        |           |                     |
+|                     |           |  - SQLAlchemy ORM        |           |   - ACID            |
 +---------------------+           +--------------------------+           +---------------------+
 ```
 
