@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas import AccountCreate, AccountResponse, TransactionHistoryResponse
-from app.services import create_account, get_account_by_id, get_account_transactions
+from app.schemas import AccountCreate, AccountResponse, TransactionHistoryResponse, DepositRequest, TransactionSuccessResponse
+from app.services import create_account, get_account_by_id, get_account_transactions, deposit_funds
 
 
 router = APIRouter(prefix="/api/v1", tags=["accounts"])
@@ -64,7 +64,7 @@ def get_transaction_history_endpoint(account_id: int, limit: int = 10, offset: i
     if limit < 1 or limit > 100:
         raise HTTPException(status_code=400, detail="Limit must be between 1 and 100!")
     if offset < 0:
-        raise HTTPException(status_code=400, detail="Offset cannot be zero!!")
+        raise HTTPException(status_code=400, detail="Offset cannot be negative!!")
     
     try:
         history = get_account_transactions(db, account_id, limit, offset)
@@ -74,3 +74,28 @@ def get_transaction_history_endpoint(account_id: int, limit: int = 10, offset: i
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"failed to retrieve transaction history: {str(e)}")
+    
+
+@router.post(
+    "/transactions/deposit",
+    response_model=TransactionSuccessResponse,
+    summary="Make a deposit",
+    description="Add funds to an account given the deatils and amount"
+)
+def deposit_funds_endpoint(deposit_data: DepositRequest, db: Session = Depends(get_db)):
+    try:
+        result = deposit_funds(
+            db=db,
+            account_id=deposit_data.account_id,
+            amount=deposit_data.amount,
+            description=deposit_data.description            
+        )
+
+        return result
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Deposit failed: {str(e)}")

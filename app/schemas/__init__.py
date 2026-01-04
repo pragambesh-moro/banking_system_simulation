@@ -50,3 +50,27 @@ class TransactionHistoryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True, json_encoders= {
         Decimal: lambda v: float(v)
     })
+
+class DepositRequest(BaseModel):
+    account_id: int = Field(..., gt=0, description="Acount ID to deposit into")
+    amount: Decimal = Field(..., gt=0.00, description="Amount to deposit")
+    description: Optional[str] = Field(None, max_length=255, description="Optional description on the transaction")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example" : {
+                "account_id":1,
+                "amount":500.00,
+                "description":"Monthly allowance"
+            }
+        }
+    )
+
+class TransactionSuccessResponse(BaseModel):
+    message: str
+    transaction: TransactionResponse
+    new_balance: Decimal
+
+    model_config = ConfigDict(from_attributes=True, json_encoders={
+        Decimal: lambda v: float(v)
+        })
