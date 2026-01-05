@@ -15,9 +15,9 @@ A full-stack banking application designed to model core financial workflows. Thi
 
 ## 🚧 Project Status
 
-**Current Status: In Progress (Phase-2: Business Logic)**
+**Current Status: In Progress (Phase-3: Frontend)**
 
-The core backend logic for atomic transfers and account management is in progress. Frontend integration is currently underway.
+The core backend logic for atomic transfers and account management has been completed successfuly. Frontend integration is currently in progress. Deployment is underway.
 
 ---
 
