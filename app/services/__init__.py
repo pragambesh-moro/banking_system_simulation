@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from app.models import Account, TransactionType, Transaction
-from app.schemas import AccountCreate, TransactionSuccessResponse
+from app.schemas import AccountCreate, TransactionSuccessResponse, TransferSuccessResponse, AccountTransactionDetail
 from decimal import Decimal as d
 import random
 
@@ -166,3 +166,102 @@ def withdraw_funds(db: Session, account_id: int, amount: d, description: str = N
         db.rollback()
         raise
 
+def transfer_funds(db: Session, from_account_id: int, to_account_id: int, amount: d, description: str = None) -> TransferSuccessResponse:
+    try:
+        if amount <= 0:
+            raise ValueError("Amount has to be greater than zero")
+        if from_account_id == to_account_id:
+            raise ValueError("Cannot transfer to same account!")
+        
+        #Row-level locking with deadlock prevention:
+        if from_account_id < to_account_id:
+            first_id, second_id = from_account_id, to_account_id
+        else:
+            first_id, second_id = to_account_id, from_account_id
+
+        first_account = db.query(Account).filter(Account.id == first_id).with_for_update().first()
+        second_account = db.query(Account).filter(Account.id == second_id).with_for_update().first()
+
+        if from_account_id < to_account_id:
+            from_account, to_account = first_account, second_account
+        else:
+            from_account, to_account = second_account, first_account
+
+        if not from_account:
+            raise ValueError(f"Source account with ID: {from_account_id} not found")
+        
+        if not to_account:
+            raise ValueError(f"Destination account with ID: {to_account_id} not found")
+        
+        if from_account.balance < amount:
+            raise ValueError("Insufficeient funds")
+        
+        from_old_balance = from_account.balance
+        from_new_balance = from_old_balance - amount
+        from_account.balance = from_new_balance
+
+        to_old_balance = to_account.balance
+        to_new_balance = to_old_balance + amount
+        to_account.balance = to_new_balance
+
+        from_transaction = Transaction(
+            account_id=from_account_id,
+            transaction_type=TransactionType.DEBIT,
+            amount=amount,
+            balance_after=from_new_balance,
+            description=description or f"Transfer to account {to_account.account_number}"
+        )
+
+        db.add(from_transaction)
+
+        to_transaction = Transaction(
+            account_id=to_account_id,
+            transaction_type=TransactionType.CREDIT,
+            amount=amount,
+            balance_after=to_new_balance,
+            description=description or f"Transfer from account {from_account.account_number}"
+        )
+
+        db.add(to_transaction)
+
+        db.flush()
+
+        from_transaction.related_transaction_id = to_transaction.id
+        to_transaction.related_transaction_id = from_transaction.id
+
+        db.flush()
+
+        db.refresh(from_transaction)
+        db.refresh(to_transaction)
+
+        try:
+            response = TransferSuccessResponse(
+                message="Transfer successful",
+                from_account=AccountTransactionDetail(
+                    account_id=from_account_id,
+                    transaction=from_transaction,
+                    new_balance=from_new_balance
+                ),
+                to_account=AccountTransactionDetail(
+                    account_id=to_account_id,
+                    transaction=to_transaction,
+                    new_balance=to_new_balance
+                )
+            )
+        except Exception as validation_error:
+            db.rollback()
+            raise Exception(
+                f"Response validation failed: {validation_error}"
+            )
+
+    # Only commit if validation succeeded
+        db.commit()
+
+        return response
+    
+    except ValueError:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise

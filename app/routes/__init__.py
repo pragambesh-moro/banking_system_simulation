@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas import AccountCreate, AccountResponse, TransactionHistoryResponse, DepositRequest, TransactionSuccessResponse, WithdrawalRequest
-from app.services import create_account, get_account_by_id, get_account_transactions, deposit_funds, withdraw_funds
+from app.schemas import AccountCreate, AccountResponse, TransactionHistoryResponse, DepositRequest, TransactionSuccessResponse, WithdrawalRequest, TransferRequest, TransferSuccessResponse
+from app.services import create_account, get_account_by_id, get_account_transactions, deposit_funds, withdraw_funds, transfer_funds
 
 
 router = APIRouter(prefix="/api/v1", tags=["accounts"])
@@ -121,3 +121,25 @@ def withdraw_funds_endpoint(withdraw_data: WithdrawalRequest, db: Session = Depe
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Withdrawal failed: {str(e)}")
+    
+@router.post(
+    "/transactions/transfer",
+    response_model=TransferSuccessResponse,
+    summary="Make a transfer",
+    description="Make a transfer from one account to another account given the IDs"
+)
+def transfer_funds_endpoint(transfer_data: TransferRequest, db: Session = Depends(get_db)):
+    try:
+        result = transfer_funds(
+            db=db,
+            from_account_id=transfer_data.from_account_id,
+            to_account_id=transfer_data.to_account_id,
+            amount=transfer_data.amount,
+            description=transfer_data.description
+        )
+
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Transfer failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Transfer failed: {str(e)}")

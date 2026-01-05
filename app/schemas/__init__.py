@@ -89,3 +89,37 @@ class WithdrawalRequest(BaseModel):
             }
         }
     )
+
+class TransferRequest(BaseModel):
+    from_account_id: int = Field(..., gt=0, description="Transferring from")
+    to_account_id: int = Field(..., gt=0, description="Transferring to")
+    amount: Decimal = Field(..., gt=0.00, description="Amount to transfer")
+    description: Optional[str] = Field(None, max_length=255, description="Optional description")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "from_account_id":1,
+                "to_account_id":2,
+                "amount":200.00,
+                "description":"Rent payment"
+            }
+        }
+    )
+
+class AccountTransactionDetail(BaseModel):
+    account_id: int
+    transaction: TransactionResponse
+    new_balance: Decimal
+    
+    model_config = ConfigDict(from_attributes=True, json_encoders={
+            Decimal: lambda v: float(v)
+        }
+    )
+
+class TransferSuccessResponse(BaseModel):
+    message: str
+    from_account: AccountTransactionDetail
+    to_account: AccountTransactionDetail
+    
+    model_config = ConfigDict(from_attributes=True)
