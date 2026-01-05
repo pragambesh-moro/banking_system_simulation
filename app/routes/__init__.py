@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas import AccountCreate, AccountResponse, TransactionHistoryResponse, DepositRequest, TransactionSuccessResponse
-from app.services import create_account, get_account_by_id, get_account_transactions, deposit_funds
+from app.schemas import AccountCreate, AccountResponse, TransactionHistoryResponse, DepositRequest, TransactionSuccessResponse, WithdrawalRequest
+from app.services import create_account, get_account_by_id, get_account_transactions, deposit_funds, withdraw_funds
 
 
 router = APIRouter(prefix="/api/v1", tags=["accounts"])
@@ -99,3 +99,25 @@ def deposit_funds_endpoint(deposit_data: DepositRequest, db: Session = Depends(g
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Deposit failed: {str(e)}")
+    
+@router.post(
+    "/transactions/withdraw",
+    response_model=TransactionSuccessResponse,
+    summary="Make a withdrawal",
+    description="Withdraw an amount from a user's account"
+)
+def withdraw_funds_endpoint(withdraw_data: WithdrawalRequest, db: Session = Depends(get_db)):
+    try:
+        result = withdraw_funds(
+            db=db,
+            account_id=withdraw_data.account_id,
+            amount=withdraw_data.amount,
+            description=withdraw_data.description
+        )
+
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Withdrawal failed: {str(e)}")

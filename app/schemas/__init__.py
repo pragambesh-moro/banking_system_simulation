@@ -74,3 +74,18 @@ class TransactionSuccessResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True, json_encoders={
         Decimal: lambda v: float(v)
         })
+
+class WithdrawalRequest(BaseModel):
+    account_id: int = Field(..., gt=0, description="Account to withdraw from")
+    amount: Decimal = Field(..., gt=0, description="Amount to withdraw")
+    description: Optional[str] = Field(None, max_length=255, description="Optional description")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "account_id":1,
+                "amount":20.00,
+                "description":"Test withdrawal"
+            }
+        }
+    )

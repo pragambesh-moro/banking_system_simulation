@@ -63,5 +63,4 @@ htmlcov/
 dmypy.json
 
 # Development scripts (optional - if you don't want to share them)
-reset_database.py
 seed_database.py
