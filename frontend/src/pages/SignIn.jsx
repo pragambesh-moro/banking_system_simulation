@@ -4,10 +4,11 @@ import { toast } from 'react-hot-toast';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
-import authService from '../services/auth.service';
+import useAuthStore from '../stores/authStore';
 
 const SignIn = () => {
   const navigate = useNavigate();
+  const signIn = useAuthStore(state => state.signIn);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -57,7 +58,7 @@ const SignIn = () => {
     setIsLoading(true);
     
     try {
-      await authService.signIn(formData.email, formData.password);
+      await signIn(formData.email, formData.password);
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (error) {
@@ -69,19 +70,19 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gray-900">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm">
+      <nav className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-primary">🏦 SecureBank</span>
+              <span className="text-2xl font-bold text-white">🏦 SecureBank</span>
             </Link>
             <div className="flex space-x-4">
-              <span className="text-gray-600">Don't have an account?</span>
+              <span className="text-gray-400">Don't have an account?</span>
               <Link 
                 to="/signup"
-                className="text-primary hover:text-primary-dark font-medium"
+                className="text-blue-400 hover:text-blue-300 font-medium"
               >
                 Sign Up
               </Link>
@@ -96,24 +97,24 @@ const SignIn = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <div className="bg-primary p-4 rounded-full">
+              <div className="bg-blue-600 p-4 rounded-full">
                 <LogIn className="w-12 h-12 text-white" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            <h1 className="text-4xl font-bold text-white mb-3">
               Welcome Back
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-400">
               Sign in to access your account
             </p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-xl p-8 shadow-lg">
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-8">
             <form onSubmit={handleSubmit}>
               {errors.general && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-danger">{errors.general}</p>
+                <div className="mb-6 p-4 bg-red-900/20 border border-red-500 rounded-lg">
+                  <p className="text-sm text-red-400">{errors.general}</p>
                 </div>
               )}
 
@@ -153,11 +154,11 @@ const SignIn = () => {
 
             {/* Divider */}
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-400">
                 New to SecureBank?{' '}
                 <Link 
                   to="/signup" 
-                  className="text-primary hover:text-primary-dark font-semibold"
+                  className="text-blue-400 hover:text-blue-300 font-semibold"
                 >
                   Create an account
                 </Link>
@@ -166,14 +167,14 @@ const SignIn = () => {
           </div>
 
           {/* Additional Info */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="mt-8 bg-gray-700 border border-gray-600 rounded-lg p-4">
             <div className="flex items-start space-x-3">
-              <Lock className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+              <Lock className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-gray-900 mb-1">
+                <p className="text-sm font-semibold text-gray-200 mb-1">
                   Secure & Encrypted
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Your credentials are protected with bank-grade encryption
                 </p>
               </div>
@@ -183,9 +184,9 @@ const SignIn = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-auto">
+      <footer className="bg-gray-800 border-t border-gray-700 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <p className="text-center text-gray-500">
+          <p className="text-center text-gray-400">
             © 2026 Pragambesh Moro. Built with FastAPI & React
           </p>
         </div>

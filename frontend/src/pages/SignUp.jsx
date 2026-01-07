@@ -4,10 +4,11 @@ import { toast } from 'react-hot-toast';
 import { UserPlus, Mail, Lock, User, DollarSign } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
-import authService from '../services/auth.service';
+import useAuthStore from '../stores/authStore';
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const signUp = useAuthStore(state => state.signUp);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -75,7 +76,7 @@ const SignUp = () => {
     setIsLoading(true);
     
     try {
-      await authService.signUp({
+      await signUp({
         name: formData.name,
         email: formData.email,
         password: formData.password,
@@ -92,19 +93,19 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gray-900">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm">
+      <nav className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-primary">🏦 SecureBank</span>
+              <span className="text-2xl font-bold text-white">🏦 SecureBank</span>
             </Link>
             <div className="flex space-x-4">
-              <span className="text-gray-600">Already have an account?</span>
+              <span className="text-gray-400">Already have an account?</span>
               <Link 
                 to="/login"
-                className="text-primary hover:text-primary-dark font-medium"
+                className="text-blue-400 hover:text-blue-300 font-medium"
               >
                 Sign In
               </Link>
@@ -119,24 +120,24 @@ const SignUp = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <div className="bg-primary p-4 rounded-full">
+              <div className="bg-blue-600 p-4 rounded-full">
                 <UserPlus className="w-12 h-12 text-white" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            <h1 className="text-4xl font-bold text-white mb-3">
               Create Account
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-400">
               Join SecureBank and start managing your finances
             </p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-xl p-8 shadow-lg">
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-8">
             <form onSubmit={handleSubmit}>
               {errors.general && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-danger">{errors.general}</p>
+                <div className="mb-6 p-4 bg-red-900/20 border border-red-500 rounded-lg">
+                  <p className="text-sm text-red-400">{errors.general}</p>
                 </div>
               )}
 

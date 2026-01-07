@@ -41,6 +41,10 @@ def get_account_by_id(db: Session, account_id: int) -> Account | None:
     #returns account object if found or None
     return db.query(Account).filter(Account.id == account_id).first()
 
+def get_account_by_account_number(db: Session, account_number: str) -> Account | None:
+    """Get account by account number"""
+    return db.query(Account).filter(Account.account_number == account_number).first()
+
 
 def get_account_transactions(db: Session, account_id: int, limit: int = 10, offset: int = 0) -> dict:
     account = db.query(Account).filter(Account.id == account_id).first()
@@ -265,3 +269,55 @@ def transfer_funds(db: Session, from_account_id: int, to_account_id: int, amount
     except Exception as e:
         db.rollback()
         raise
+
+def transfer_by_account_number(db: Session, from_account_id: int, to_account_number: str, amount: d, description: str = None) -> TransferSuccessResponse:
+    """Transfer funds using recipient's account number"""
+    try:
+        # Find recipient account by account number
+        to_account = get_account_by_account_number(db, to_account_number)
+        
+        if not to_account:
+            raise ValueError(f"Account with account number {to_account_number} not found")
+        
+        # Use existing transfer_funds function
+        return transfer_funds(db, from_account_id, to_account.id, amount, description)
+    
+    except ValueError:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise
+
+def get_dashboard_stats(db: Session, account_id: int, days: int = 30) -> dict:
+    """Get dashboard statistics for the last N days"""
+    account = get_account_by_id(db, account_id)
+    
+    if not account:
+        raise ValueError(f"Account with id {account_id} not found")
+    
+    # Calculate date threshold
+    from datetime import datetime, timedelta
+    threshold_date = datetime.now() - timedelta(days=days)
+    
+    # Get all transactions in the period
+    transactions = db.query(Transaction).filter(
+        Transaction.account_id == account_id,
+        Transaction.created_at >= threshold_date
+    ).all()
+    
+    total_income = sum(
+        t.amount for t in transactions 
+        if t.transaction_type == TransactionType.CREDIT
+    )
+    
+    total_expenses = sum(
+        t.amount for t in transactions 
+        if t.transaction_type == TransactionType.DEBIT
+    )
+    
+    return {
+        "total_income": total_income,
+        "total_expenses": total_expenses,
+        "total_transactions": len(transactions)
+    }

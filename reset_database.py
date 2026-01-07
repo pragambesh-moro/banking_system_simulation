@@ -18,6 +18,7 @@ def reset_database():
         # Truncate tables
         db.execute(text("TRUNCATE TABLE transactions"))
         db.execute(text("TRUNCATE TABLE accounts"))
+        db.execute(text("TRUNCATE TABLE users"))
         
         # Re-enable foreign key checks
         db.execute(text("SET FOREIGN_KEY_CHECKS = 1"))

@@ -25,20 +25,26 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gray-900">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm">
+      <nav className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <span className="text-2xl font-bold text-primary">🏦 SecureBank</span>
+              <span className="text-2xl font-bold text-white">🏦 SecureBank</span>
             </div>
             <div className="flex space-x-4">
               <button 
                 onClick={() => navigate('/login')}
-                className="text-gray-600 hover:text-primary font-medium"
+                className="text-gray-300 hover:text-blue-400 font-medium"
               >
                 Sign In
+              </button>
+              <button 
+                onClick={() => navigate('/signup')}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg"
+              >
+                Get Started
               </button>
             </div>
           </div>
@@ -48,10 +54,10 @@ const Landing = () => {
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
             Banking Made Simple & Secure
           </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
             Manage your finances with confidence. Fast transfers, real-time updates, and bank-grade security.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -76,15 +82,15 @@ const Landing = () => {
           {features.map((feature, index) => (
             <div 
               key={index}
-              className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300"
+              className="bg-gray-800 border border-gray-700 rounded-xl p-8 hover:border-blue-500 transition-all duration-300"
             >
               <div className="flex justify-center mb-4">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-bold text-gray-900 text-center mb-3">
+              <h3 className="text-xl font-bold text-white text-center mb-3">
                 {feature.title}
               </h3>
-              <p className="text-gray-600 text-center">
+              <p className="text-gray-400 text-center">
                 {feature.description}
               </p>
             </div>
@@ -93,9 +99,9 @@ const Landing = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-32">
+      <footer className="bg-gray-800 border-t border-gray-700 mt-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <p className="text-center text-gray-500">
+          <p className="text-center text-gray-400">
             © 2026 Pragambesh Moro. Built with FastAPI & React
           </p>
         </div>

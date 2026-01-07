@@ -9,18 +9,20 @@ const Input = ({
   error,
   required = false,
   disabled = false,
+  name,
   ...props 
 }) => {
   return (
     <div className="mb-4">
       {label && (
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-300 mb-2">
           {label}
-          {required && <span className="text-danger ml-1">*</span>}
+          {required && <span className="text-red-400 ml-1">*</span>}
         </label>
       )}
       <input
         type={type}
+        name={name}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
@@ -28,14 +30,15 @@ const Input = ({
         required={required}
         className={`
           w-full px-4 py-3 border rounded-lg 
-          focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-          disabled:bg-gray-100 disabled:cursor-not-allowed
-          ${error ? 'border-danger' : 'border-gray-300'}
+          bg-gray-700 text-gray-100 placeholder-gray-500
+          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+          disabled:bg-gray-800 disabled:cursor-not-allowed
+          ${error ? 'border-red-500' : 'border-gray-600'}
         `}
         {...props}
       />
       {error && (
-        <p className="mt-1 text-sm text-danger">{error}</p>
+        <p className="mt-1 text-sm text-red-400">{error}</p>
       )}
     </div>
   );

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas import AccountCreate, AccountResponse, TransactionHistoryResponse, DepositRequest, TransactionSuccessResponse, WithdrawalRequest, TransferRequest, TransferSuccessResponse
-from app.services import create_account, get_account_by_id, get_account_transactions, deposit_funds, withdraw_funds, transfer_funds
+from app.schemas import AccountCreate, AccountResponse, TransactionHistoryResponse, DepositRequest, TransactionSuccessResponse, WithdrawalRequest, TransferRequest, TransferSuccessResponse, TransferByAccountNumberRequest, DashboardStatsResponse
+from app.services import create_account, get_account_by_id, get_account_transactions, deposit_funds, withdraw_funds, transfer_funds, transfer_by_account_number, get_dashboard_stats, get_account_by_account_number
 
 
 router = APIRouter(prefix="/api/v1", tags=["accounts"])
@@ -138,8 +138,68 @@ def transfer_funds_endpoint(transfer_data: TransferRequest, db: Session = Depend
             description=transfer_data.description
         )
 
+        # Add transaction ID to response
+        result.transaction_id = f"#TXN-{result.from_account.transaction.id:06d}"
+
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Transfer failed: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Transfer failed: {str(e)}")
+
+@router.post(
+    "/transactions/transfer-by-account",
+    response_model=TransferSuccessResponse,
+    summary="Make a transfer by account number",
+    description="Make a transfer from one account to another using recipient's account number"
+)
+def transfer_by_account_number_endpoint(transfer_data: TransferByAccountNumberRequest, db: Session = Depends(get_db)):
+    try:
+        result = transfer_by_account_number(
+            db=db,
+            from_account_id=transfer_data.from_account_id,
+            to_account_number=transfer_data.to_account_number,
+            amount=transfer_data.amount,
+            description=transfer_data.description
+        )
+
+        # Add transaction ID to response
+        result.transaction_id = f"#TXN-{result.from_account.transaction.id:06d}"
+
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Transfer failed: {str(e)}")
+
+@router.get(
+    "/accounts/{account_id}/stats",
+    response_model=DashboardStatsResponse,
+    summary="Get dashboard statistics",
+    description="Get income, expenses, and transaction count for the last N days"
+)
+def get_dashboard_stats_endpoint(account_id: int, days: int = 30, db: Session = Depends(get_db)):
+    try:
+        stats = get_dashboard_stats(db, account_id, days)
+        return stats
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve statistics: {str(e)}")
+
+@router.get(
+    "/accounts/by-number/{account_number}",
+    response_model=AccountResponse,
+    summary="Get account by account number",
+    description="Retrieve account information by account number"
+)
+def get_account_by_number_endpoint(account_number: str, db: Session = Depends(get_db)):
+    account = get_account_by_account_number(db, account_number)
+    
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Account with number {account_number} not found"
+        )
+    
+    return account

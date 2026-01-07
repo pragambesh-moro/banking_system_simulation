@@ -170,6 +170,23 @@ class TransferRequest(BaseModel):
         }
     )
 
+class TransferByAccountNumberRequest(BaseModel):
+    from_account_id: int = Field(..., gt=0, description="Your account ID")
+    to_account_number: str = Field(..., min_length=1, description="Recipient's account number")
+    amount: Decimal = Field(..., gt=0.00, description="Amount to transfer")
+    description: Optional[str] = Field(None, max_length=255, description="Optional description")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "from_account_id":1,
+                "to_account_number":"ACC-789012",
+                "amount":200.00,
+                "description":"Rent payment"
+            }
+        }
+    )
+
 class AccountTransactionDetail(BaseModel):
     account_id: int
     transaction: TransactionResponse
@@ -184,5 +201,17 @@ class TransferSuccessResponse(BaseModel):
     message: str
     from_account: AccountTransactionDetail
     to_account: AccountTransactionDetail
+    transaction_id: Optional[str] = None
     
     model_config = ConfigDict(from_attributes=True)
+
+class DashboardStatsResponse(BaseModel):
+    total_income: Decimal
+    total_expenses: Decimal
+    total_transactions: int
+    
+    model_config = ConfigDict(
+        json_encoders={
+            Decimal: lambda v: float(v)
+        }
+    )
