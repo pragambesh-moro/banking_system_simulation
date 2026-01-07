@@ -10,6 +10,12 @@ class Settings(BaseSettings):
 
     APP_NAME: str = "Banking System Simulation"
     DEBUG: bool = False
+    CORS_ORIGINS: str = "http://localhost:5173"
+    
+    # JWT Authentication
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
     class Config:
         env_file = '.env'
@@ -23,4 +29,5 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-    
+
+

@@ -1,8 +1,71 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from decimal import Decimal
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
+
+class UserCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100, description="User's full name")
+    email: EmailStr = Field(..., description="User's email address")
+    password: str = Field(..., min_length=6, description="User password (min 6 characters)")
+    initial_deposit: Decimal = Field(default=Decimal("0.00"), ge=0, description="Initial account deposit")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "name": "John Doe",
+                "email": "john@example.com",
+                "password": "securepassword123",
+                "initial_deposit": 1000.00
+            }
+        }
+    )
+
+
+class UserLogin(BaseModel):
+    email: EmailStr = Field(..., description="User's email address")
+    password: str = Field(..., description="User password")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "email": "john@example.com",
+                "password": "securepassword123"
+            }
+        }
+    )
+
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    created_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AccountInfoResponse(BaseModel):
+    id: int
+    account_number: str
+    balance: Decimal
+    created_at: datetime
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_encoders={
+            Decimal: lambda v: float(v)
+        }
+    )
+
+
+class AuthResponse(BaseModel):
+    message: str
+    user: UserResponse
+    account: AccountInfoResponse
+    token: str
+    token_type: str = "bearer"
+
 
 class TransactionTypeEnum(str, Enum):
     CREDIT = "CREDIT"

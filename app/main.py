@@ -1,5 +1,7 @@
 from fastapi import FastAPI
-from app.routes import router
+from fastapi.middleware.cors import CORSMiddleware
+from app.routes import router as account_router
+from app.routes.auth_routes import router as auth_router
 from app.config import get_settings
 
 settings = get_settings()
@@ -12,7 +14,16 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-app.include_router(router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS.split(","),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth_router)
+app.include_router(account_router)
 
 @app.get("/", tags=["health"])
 def health_check():
