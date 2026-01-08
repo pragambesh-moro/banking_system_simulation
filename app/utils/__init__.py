@@ -6,7 +6,12 @@ from app.config import get_settings
 
 settings = get_settings()
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Configure bcrypt to truncate passwords instead of throwing errors
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__truncate_error=False
+)
 
 def hash_password(password: str) -> str:
     # Aggressively truncate to avoid bcrypt's 72 byte limit
