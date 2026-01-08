@@ -12,12 +12,14 @@ def resgister_user(db: Session, user_data: UserCreate) -> dict:
     if existing_user:
         raise ValueError("Email already registered with system")
     
-    # Validate password length (bcrypt max is 72 bytes)
-    if len(user_data.password.encode('utf-8')) > 72:
-        raise ValueError("Password is too long. Maximum length is 72 characters.")
+    # Truncate password to 72 bytes for bcrypt compatibility
+    password = user_data.password
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) > 72:
+        password = password_bytes[:72].decode('utf-8', errors='ignore')
     
     try:
-        hashed_pwd = hash_password(user_data.password)
+        hashed_pwd = hash_password(password)
         new_user = User(
             name=user_data.name,
             email=user_data.email,
@@ -67,6 +69,11 @@ def login_user(db: Session, email: str, password: str) -> dict:
 
     if not user:
         raise ValueError("Invalid email or password")
+    
+    # Truncate password to 72 bytes for bcrypt compatibility
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) > 72:
+        password = password_bytes[:72].decode('utf-8', errors='ignore')
     
     if not verify_password(password, user.hashed_password):
         raise ValueError("Invalid email or password")
