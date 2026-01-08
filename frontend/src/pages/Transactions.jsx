@@ -158,10 +158,18 @@ const Transactions = () => {
                           <p className="text-gray-200 font-medium">
                             {transaction.description || transaction.transaction_type}
                           </p>
-                          {transaction.related_account && (
+                          {/* Show counterparty info for transfers */}
+                          {transaction.counterparty_name && (
                             <p className="text-gray-400 text-sm">
                               {transaction.transaction_type === 'CREDIT' ? 'From:' : 'To:'}{' '}
-                              {transaction.related_account}
+                              <span className="text-blue-400">{transaction.counterparty_name}</span>
+                              {' '}({transaction.counterparty_account})
+                            </p>
+                          )}
+                          {/* Show type for non-transfers */}
+                          {!transaction.counterparty_name && transaction.description && (
+                            <p className="text-gray-400 text-sm">
+                              {transaction.transaction_type === 'CREDIT' ? 'Deposit' : 'Withdrawal'}
                             </p>
                           )}
                           <p className="text-gray-500 text-sm mt-1">

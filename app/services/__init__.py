@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
-from app.models import Account, TransactionType, Transaction
+from app.models import Account, TransactionType, Transaction, User
 from app.schemas import AccountCreate, TransactionSuccessResponse, TransferSuccessResponse, AccountTransactionDetail
 from decimal import Decimal as d
 import random
@@ -56,11 +56,42 @@ def get_account_transactions(db: Session, account_id: int, limit: int = 10, offs
 
     transactions = db.query(Transaction).filter(Transaction.account_id == account_id).order_by(Transaction.created_at.desc()).limit(limit).offset(offset).all()
 
+    # Enrich transactions with counterparty information
+    enriched_transactions = []
+    for txn in transactions:
+        txn_dict = {
+            "id": txn.id,
+            "account_id": txn.account_id,
+            "transaction_type": txn.transaction_type,
+            "amount": txn.amount,
+            "balance_after": txn.balance_after,
+            "related_trasaction_id": txn.related_transaction_id,
+            "description": txn.description,
+            "created_at": txn.created_at,
+            "counterparty_name": None,
+            "counterparty_account": None
+        }
+        
+        # If this is a transfer (has related_transaction_id), find the counterparty
+        if txn.related_transaction_id:
+            related_txn = db.query(Transaction).filter(Transaction.id == txn.related_transaction_id).first()
+            if related_txn:
+                # Get the counterparty account
+                counterparty_account = db.query(Account).filter(Account.id == related_txn.account_id).first()
+                if counterparty_account:
+                    # Get the counterparty user
+                    counterparty_user = db.query(User).filter(User.id == counterparty_account.user_id).first()
+                    if counterparty_user:
+                        txn_dict["counterparty_name"] = counterparty_user.name
+                        txn_dict["counterparty_account"] = counterparty_account.account_number
+        
+        enriched_transactions.append(txn_dict)
+
     return {
         "account_id": account.id,
         "account_number": account.account_number,
         "current_balance": account.balance,
-        "transactions": transactions,
+        "transactions": enriched_transactions,
         "total_transactions": total_count
     }
 

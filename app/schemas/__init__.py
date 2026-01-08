@@ -100,6 +100,9 @@ class TransactionResponse(BaseModel):
     related_trasaction_id: Optional[int] = None
     description: Optional[str] = None
     created_at: datetime
+    # New fields for showing transaction source/destination
+    counterparty_name: Optional[str] = None  # Name of sender/receiver
+    counterparty_account: Optional[str] = None  # Account number of sender/receiver
 
     model_config = ConfigDict(from_attributes=True)
 
