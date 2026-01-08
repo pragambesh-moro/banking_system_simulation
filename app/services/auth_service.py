@@ -12,6 +12,10 @@ def resgister_user(db: Session, user_data: UserCreate) -> dict:
     if existing_user:
         raise ValueError("Email already registered with system")
     
+    # Validate password length (bcrypt max is 72 bytes)
+    if len(user_data.password.encode('utf-8')) > 72:
+        raise ValueError("Password is too long. Maximum length is 72 characters.")
+    
     try:
         hashed_pwd = hash_password(user_data.password)
         new_user = User(
