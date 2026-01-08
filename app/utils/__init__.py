@@ -9,14 +9,16 @@ settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    # Bcrypt has a 72 byte limit, truncate password to 72 characters
-    # This is a safe approximation since most chars are 1 byte in UTF-8
-    truncated_password = password[:72]
+    # Bcrypt has a 72 byte limit - truncate to 72 bytes, not characters
+    password_bytes = password.encode('utf-8')[:72]
+    # Decode back, ignoring any incomplete multi-byte sequences at the end
+    truncated_password = password_bytes.decode('utf-8', errors='ignore')
     return pwd_context.hash(truncated_password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # Truncate to match hashing behavior
-    truncated_password = plain_password[:72]
+    # Truncate to match hashing behavior (72 bytes)
+    password_bytes = plain_password.encode('utf-8')[:72]
+    truncated_password = password_bytes.decode('utf-8', errors='ignore')
     return pwd_context.verify(truncated_password, hashed_password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
